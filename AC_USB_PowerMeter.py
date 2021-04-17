@@ -299,13 +299,15 @@ class AC_USB_PM_GUI():
 						elif fd.Attr == 'Q-pwr':
 							val = qpwr
 							if self.x10:
-								s = fd.Fmtx10.format(val/fd.Scale)
+								val = val/fd.Scale
+								s = fd.Fmtx10.format(val)
 							else:
 								s=fd.Fmtx1.format(val)
 						elif fd.Attr == 'S-pwr':
 							val = spwr
 							if self.x10:
-								s = fd.Fmtx10.format(val/fd.Scale)
+								val = val/fd.Scale
+								s = fd.Fmtx10.format(val)
 							else:
 								s=fd.Fmtx1.format(val)
 						else:
