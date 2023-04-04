@@ -351,8 +351,6 @@ if __name__ == "__main__":
 	arg = parser.parse_args()
 	
 	ACM = AC_COMBOX(arg.port_dev)
-
-	ADDR = AC_COMBOX(arg.slave_addr)
 	
 	if arg.out_name=='!':
 		out_name = 'ACM_'+strftime('%Y%m%d%H%M%S',localtime())+'.csv'
