@@ -56,7 +56,7 @@ class AC_COMBOX:
 	__ACM  = None		# serial connection to the AC com box
 	# defualt address of the AC com box
 
-    __CALADD = 0xF8		# general slave address for calibration or getting slave address
+	__CALADD = 0xF8		# general slave address for calibration or getting slave address
 
 	__FC_R_HOLD = 3		# function code: Read Hold Regs
 	__FC_R_INP  = 4		# function code: Read Input Regs
