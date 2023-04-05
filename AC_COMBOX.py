@@ -248,16 +248,16 @@ class AC_COMBOX:
 						#    0   1   2   3   4   5   
 						#  [sa][06][  reg  ][  val ][crc16]
 						# 
-						# Fixed 
+						# Changed regadd from msg[0] to msg[2]
 						msg = struct.unpack('>2B3H',data)
 						print("msg is : ")
 						for i in msg:
 							print(i, end = ' ')
-						if msg[0] == self.__REG_TH	: 
-							self.__thresh = float(msg[2])
+						if msg[2] == self.__REG_TH	: #changed from msg[0]
+							self.__thresh = float(msg[3]) #changed from msg[2]
 							res = True
-						elif msg[0] == self.__REG_ADDR:
-							self.__addr = msg[2]
+						elif msg[2] == self.__REG_ADDR: #changed from msg[0]
+							self.__addr = msg[3] #changed from msg[2] 
 							res = True
 						else: 
 							self.__dump('unknown valid response to 0x06 msg:',buf[:buflen])
