@@ -248,8 +248,11 @@ class AC_COMBOX:
 						#    0   1   2   3   4   5   
 						#  [sa][06][  reg  ][  val ][crc16]
 						# 
+						# Fixed 
 						msg = struct.unpack('>2B3H',data)
-						print(msg[0])
+						print("msg is : ")
+						for i in msg:
+							print(i, end = ' ')
 						if msg[0] == self.__REG_TH	: 
 							self.__thresh = float(msg[2])
 							res = True
