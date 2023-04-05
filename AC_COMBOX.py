@@ -249,7 +249,7 @@ class AC_COMBOX:
 						#  [sa][06][  reg  ][  val ][crc16]
 						# 
 						msg = struct.unpack('>2B3H',data)
-						print(msg)
+						print(msg[0])
 						if msg[0] == self.__REG_TH	: 
 							self.__thresh = float(msg[2])
 							res = True
@@ -321,8 +321,8 @@ class AC_COMBOX:
 		elif (New_Slave_Addr < 0) or (New_Slave_Addr > 0x00f7):
 			raise ValueError
 		else:
-			print('setting ' + str(self.__addr) +
-					' to new addr: ' + str(New_Slave_Addr))
+			print('setting current address' + str(self.__addr) +
+					' to new address: ' + str(New_Slave_Addr))
 			if self.__cmd_write_reg(self.__addr, self.__REG_ADDR, New_Slave_Addr):
 				res = self.__addr
 				success = res == New_Slave_Addr
