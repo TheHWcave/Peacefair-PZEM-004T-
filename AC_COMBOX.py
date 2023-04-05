@@ -55,8 +55,8 @@ class AC_COMBOX:
 
 	__ACM  = None		# serial connection to the AC com box
 	# defualt address of the AC com box
-    __GENADD = 0x00		# general slave address for calibration or getting slave address
-    __CALADD = 0xF8
+
+    __CALADD = 0xF8		# general slave address for calibration or getting slave address
 
 	__FC_R_HOLD = 3		# function code: Read Hold Regs
 	__FC_R_INP  = 4		# function code: Read Input Regs
@@ -278,7 +278,7 @@ class AC_COMBOX:
 		"""
 		
 		pd = None
-		if self.__cmd_read_regs(self.__SLAVEADD,self.__FC_R_INP,self.__REG_U,10):
+		if self.__cmd_read_regs(self.__addr,self.__FC_R_INP,self.__REG_U,10):
 			pd = self.PollData(
 						Volt 	= self.__volt,
 						Current = self.__current,
@@ -296,12 +296,12 @@ class AC_COMBOX:
 		"""
 		res = None
 		if Value == None:
-			if self.__cmd_read_regs(self.__SLAVEADD,self.__FC_R_HOLD,self.__REG_TH,2):
+			if self.__cmd_read_regs(self.__addr,self.__FC_R_HOLD,self.__REG_TH,2):
 				res = self.__thresh
 		else:
 			if (Value < 0) or (Value > 0x7fff):
 				raise ValueError
-			if self.__cmd_write_reg(self.__SLAVEADD,self.__REG_TH,int(round(Value,0))):
+			if self.__cmd_write_reg(self.__addr,self.__REG_TH,int(round(Value,0))):
 				res = self.__thresh
 		return res
 	def SlaveAddress(self, New_Slave_Addr=None):
@@ -332,7 +332,7 @@ class AC_COMBOX:
 			resets the energy counter
 			
 		"""
-		res = self.__cmd_userfunc(self.__SLAVEADD,self.__FC_U_RESET)
+		res = self.__cmd_userfunc(self.__addr,self.__FC_U_RESET)
 		return res
 		
 
