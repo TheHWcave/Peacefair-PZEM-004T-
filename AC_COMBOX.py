@@ -249,6 +249,7 @@ class AC_COMBOX:
 						#  [sa][06][  reg  ][  val ][crc16]
 						# 
 						msg = struct.unpack('>2B3H',data)
+						print(msg)
 						if msg[0] == self.__REG_TH	: 
 							self.__thresh = float(msg[2])
 							res = True
@@ -306,11 +307,11 @@ class AC_COMBOX:
 		return res
 	def SlaveAddress(self, New_Slave_Addr=None):
 		"""
-                sets the Slave Address from Old_Slave_Addr to New_Slave_Addr (0x0001 to 0x00F7)
-                with cmd (Old_Slave_Addr,0x06,Reg_Addr_HH,Reg_Addr_LL,Val_HH,Val_LL ,CRC_HH, CRC_LL)
+                sets the Slave Address from __addr to New_Slave_Addr (0x0001 to 0x00F7)
+                with cmd (__addr,0x06,Reg_Addr_HH,Reg_Addr_LL,Val_HH,Val_LL ,CRC_HH, CRC_LL)
                 Correct Response: New_Slave_Addr,0x06,Num_Bytes,Reg_Addr_LL,Val_HH,Val_LL,CRC_HH,CRC_LL
                 Error Reply: Slave_Addr, 0x86,Abnormal code, CRC_HH, CRC_LL
-                Old_Slave_Addr written to __addr = .GetSlaveAddress on initialize
+                Current address written to __addr = .GetSlaveAddress on initialize
 		"""
 		res = None
 		success = False
