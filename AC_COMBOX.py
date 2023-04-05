@@ -30,10 +30,12 @@ from time import sleep,time,localtime,strftime,perf_counter
 
 parser = argparse.ArgumentParser()
 DEFPORT = '/dev/accom_0'
-
+DEFADDR = 0x01
 
 parser.add_argument('--port','-p',help='port (default ='+DEFPORT,
 					dest='port_dev',action='store',type=str,default=DEFPORT)
+parser.add_argument('--address', '-s', help='port (default 0x01 to 0xF7)',
+                    dest='slave_addr', action='store', type=bytes, default=DEFADDR)
 parser.add_argument('--out','-o',help='output filename (default=ACCOM_<timestamp>.csv)',
 					dest='out_name',action='store',type=str,default='!')
 parser.add_argument('--time','-t',help='interval time in seconds between measurements (def=1.0)',
@@ -52,13 +54,15 @@ parser.add_argument('--debug','-d',help='debug level 0.. (def=1)',
 class AC_COMBOX:
 
 	__ACM  = None		# serial connection to the AC com box
-	
-	__SLAVEADD	= 1		# address of the AC com box
-	
+	# defualt address of the AC com box
+
+	__CALADD = 0xF8		# general slave address for calibration or getting slave address
+
 	__FC_R_HOLD = 3		# function code: Read Hold Regs
 	__FC_R_INP  = 4		# function code: Read Input Regs
 	__FC_W_SING = 6		# function code: Write Single Reg
-	__FC_U_CAL 	= 0x41	# function code (user defined): Calibration (use address 0xF8)
+	
+	__FC_U_CAL 	= 0x41	# function code (user defined): Calibration (uses __CALADD address 0xF8)
 	__FC_U_RESET= 0x42	# function code (user defined): Reset Energy
 	
 	
@@ -244,12 +248,16 @@ class AC_COMBOX:
 						#    0   1   2   3   4   5   
 						#  [sa][06][  reg  ][  val ][crc16]
 						# 
+						# Changed regadd from msg[0] to msg[2]
 						msg = struct.unpack('>2B3H',data)
-						if msg[0] == self.__REG_TH	: 
-							self.__thresh = float(msg[2])
+						#print("msg is : ")
+						#for i in msg:
+						#	print(i, end = ' ')
+						if msg[2] == self.__REG_TH	: #changed from msg[0]
+							self.__thresh = float(msg[3]) #changed from msg[2]
 							res = True
-						elif msg[0] == self.__REG_ADDR:
-							self.__addr = msg[2]
+						elif msg[2] == self.__REG_ADDR: #changed from msg[0]
+							self.__addr = msg[3] #changed from msg[2] 
 							res = True
 						else: 
 							self.__dump('unknown valid response to 0x06 msg:',buf[:buflen])
@@ -274,7 +282,7 @@ class AC_COMBOX:
 		"""
 		
 		pd = None
-		if self.__cmd_read_regs(self.__SLAVEADD,self.__FC_R_INP,self.__REG_U,10):
+		if self.__cmd_read_regs(self.__addr,self.__FC_R_INP,self.__REG_U,10):
 			pd = self.PollData(
 						Volt 	= self.__volt,
 						Current = self.__current,
@@ -292,21 +300,43 @@ class AC_COMBOX:
 		"""
 		res = None
 		if Value == None:
-			if self.__cmd_read_regs(self.__SLAVEADD,self.__FC_R_HOLD,self.__REG_TH,2):
+			if self.__cmd_read_regs(self.__addr,self.__FC_R_HOLD,self.__REG_TH,2):
 				res = self.__thresh
 		else:
 			if (Value < 0) or (Value > 0x7fff):
 				raise ValueError
-			if self.__cmd_write_reg(self.__SLAVEADD,self.__REG_TH,int(round(Value,0))):
+			if self.__cmd_write_reg(self.__addr,self.__REG_TH,int(round(Value,0))):
 				res = self.__thresh
 		return res
-		
+	def SlaveAddress(self, New_Slave_Addr=None):
+		"""
+                sets the Slave Address from __addr to New_Slave_Addr (0x0001 to 0x00F7)
+                with cmd (__addr,0x06,Reg_Addr_HH,Reg_Addr_LL,Val_HH,Val_LL ,CRC_HH, CRC_LL)
+                Correct Response: New_Slave_Addr,0x06,Num_Bytes,Reg_Addr_LL,Val_HH,Val_LL,CRC_HH,CRC_LL
+                Error Reply: Slave_Addr, 0x86,Abnormal code, CRC_HH, CRC_LL
+                Current address written to __addr = .GetSlaveAddress on initialize
+		"""
+		res = None
+		success = False
+		if New_Slave_Addr == None:
+			if self.__cmd_read_regs(self.__CALADD, self.__FC_R_HOLD, self.__REG_TH, 2):
+				res = self.__addr
+		elif (New_Slave_Addr < 0) or (New_Slave_Addr > 0x00f7):
+			raise ValueError
+		else:
+			print('setting current address' + str(self.__addr) +
+					' to new address: ' + str(New_Slave_Addr))
+			if self.__cmd_write_reg(self.__addr, self.__REG_ADDR, New_Slave_Addr):
+				res = self.__addr
+				success = res == New_Slave_Addr
+			print('success: ' + str(success))
+		return res
 	def ResetEnergy(self):
 		"""
 			resets the energy counter
 			
 		"""
-		res = self.__cmd_userfunc(self.__SLAVEADD,self.__FC_U_RESET)
+		res = self.__cmd_userfunc(self.__addr,self.__FC_U_RESET)
 		return res
 		
 
@@ -314,6 +344,11 @@ class AC_COMBOX:
 		self.__ACM = serial.Serial(port = ACMport,
 						baudrate=ACMspeed,
 						timeout = 0.01)	
+		# read and record current dev Slave_Addr
+		# sets self.__addr from self.SlaveAddress(None) returns
+		print('initializing meter - getting Address')
+		print('initializing meter - has address: ' +
+				str(self.SlaveAddress(None)))
 
 
 if __name__ == "__main__":
