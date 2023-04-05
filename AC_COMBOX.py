@@ -250,9 +250,9 @@ class AC_COMBOX:
 						# 
 						# Changed regadd from msg[0] to msg[2]
 						msg = struct.unpack('>2B3H',data)
-						print("msg is : ")
-						for i in msg:
-							print(i, end = ' ')
+						#print("msg is : ")
+						#for i in msg:
+						#	print(i, end = ' ')
 						if msg[2] == self.__REG_TH	: #changed from msg[0]
 							self.__thresh = float(msg[3]) #changed from msg[2]
 							res = True
