@@ -232,7 +232,7 @@ class AC_USB_PM_GUI():
 			if self.RecName == '':
 				self.RecName = 'REC_'+strftime('%Y%m%d%H%M%S',localtime())+'.csv'
 				try:
-					self.f = open(self.RecName,'w')
+					self.f = open(self.RecName,'w',encoding='utf-8')
 					self.f.write('Time[S],')
 					for fd in self.FD: self.f.write(fd.Label+'['+fd.Unit+'],')
 					self.f.write('xmode\n')
